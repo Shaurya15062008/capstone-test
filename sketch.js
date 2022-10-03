@@ -28,15 +28,12 @@ function preload() {
 
 function setup() {
     createCanvas(600,600 )
-    flight = createSprite(50, 150, 20, 50);
+    flight = createSprite(50, 100, 20, 50);
     flight.addImage(planeImg)
     flight.scale = 0.1
+    flight.depth = flight.depth+2
 
-    bird = createSprite(200,100,20,50)
-    bird.addImage(birdImg)
-    bird.scale = 0.05
-    bird.velocityX = -4
-
+    
     ground = createSprite(200, 180, 400, 20);
     ground.addImage("ground", groundImage);
     ground.x = ground.width / 2;
@@ -51,6 +48,8 @@ function setup() {
     invisibleGround.visible = false;
 
     cloudsGroup = createGroup();
+    
+    birdsGroup = createGroup();
 
     flight.setCollider("circle", 0, 0, 40);
     flight.debug = false
@@ -81,21 +80,33 @@ function draw() {
             ground.x = ground.width / 2;
         }
         if (keyDown("space")) {
-            flight.velocityY = -16;
+            flight.velocityY = -5;
             jumpSound.play();
         }
 
         flight.velocityY = flight.velocityY + 0.8
 
         spawnClouds();
+        spawnBirds();
 
 
-        if (ground.isTouching(flight)) {
+        if (ground.isTouching(flight))  {
             flight.velocityY = -12;
             gameState = END;
             dieSound.play();
         }
+        if (birdsGroup.isTouching(flight))
+        {
+    
+            flight.velocityY = -12;
+            gameState = END;
+            dieSound.play();
+    
+        }
+
+
     }
+    
     else if (gameState === END) {
 
         gameOver.visible = true;
@@ -103,13 +114,16 @@ function draw() {
 
         ground.velocityX = 0;
         flight.velocityY = 0
-        flight.changeAnimation(crashImg);
+        flight.addImage(crashImg);
 
         if (mousePressedOver(restart)) {
             reset();
 
 
         }
+
+
+        
         
         cloudsGroup.setLifetimeEach(-1);
     }
@@ -133,7 +147,7 @@ flight.velocityY = -4
 function spawnClouds() {
     //write code here to spawn the clouds
     if (frameCount % 60 === 0) {
-        cloud = createSprite(600, 100, 40, 10);
+        cloud = createSprite(600, 130, 40, 10);
         cloud.y = Math.round(random(10, 60));
         cloud.addImage(cloudImage);
         cloud.scale = 0.5;
@@ -151,15 +165,35 @@ function spawnClouds() {
     }
 }
 
+function spawnBirds() {
+    if (frameCount % 120 === 0) {
+        bird = createSprite(600, 120, 40, 10);
+        bird.y = Math.round(random(30, 50));
+        bird.addImage(birdImg);
+        bird.scale = 0.05;
+        bird.velocityX = -3;
+        bird.depth = flight.depth;
+        flight.depth = flight.depth + 1;
+        birdsGroup.add(bird)
+     
+
+
+    }
+    
+
+}
+
+
+
 function reset() {
 
     gameState = PLAY
     score = 0
     gameOver.visible = false;
     restart.visible = false;
-    obstaclesGroup.destroyEach();
     cloudsGroup.destroyEach();
-    flight.changeAnimation(flight);
+
+    flight.addImage(flight);
 
 }
 
